@@ -2,10 +2,170 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>1KB Minigames Hub</title>
+  <title>1KB Minigames Hub - Acceso</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:700,400&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <style>
+    :root {
+      --main: #292d36; --accent: #ffcc00; --bg: #f6f7fb; --txt: #191c23; --border: #e3e3e6;
+      --btn: #292d36; --btn-txt: #fff; --btn-hover: #ffcc00; --btn-txt-hover: #191c23;
+    }
+    html, body { background: var(--bg); margin:0; padding:0; font-family: 'Montserrat', Arial, sans-serif; color: var(--txt);}
+    .center { max-width: 350px; margin: 65px auto 0 auto; background: #fff; border:1px solid var(--border); border-radius:18px; box-shadow:0 4px 28px #2c2c3b18; padding:36px 36px 25px 36px; }
+    h2 { text-align:center; font-weight:700; color:var(--main); margin-bottom:25px; }
+    .tabs { display:flex; justify-content:center; margin-bottom:23px; }
+    .tab { flex:1; text-align:center; font-weight:700; padding:11px 0; cursor:pointer; border-bottom:2.2px solid #eee; transition:.13s;}
+    .tab.active { color:var(--accent); border-color: var(--accent); background: #fffbe8;}
+    form { display:flex; flex-direction:column; }
+    label { font-size:.98em; margin-bottom:6px; color:#444; font-weight:600;}
+    input { font-size:1.08em; padding:12px 10px; border:1.4px solid var(--border); border-radius:7px; margin-bottom:18px;}
+    input:focus { border-color: var(--accent);}
+    button { background: var(--btn); color:var(--btn-txt); font-weight:700; border:none; border-radius:7px; padding:13px 0; font-size:1.08em; cursor:pointer; margin-top:6px; transition:.17s;}
+    button:hover { background:var(--btn-hover); color:var(--btn-txt-hover);}
+    .msg { margin-top:10px; text-align:center; color: #e38c00; font-size:.98em;}
+    #loggedIn { text-align:center; padding:17px 0;}
+    #logoutBtn {margin-top:18px;}
+    #loading { text-align:center; color:#999; margin-top:16px;}
+  </style>
 </head>
 <body>
-  <h1>¡Hola, mundo!</h1>
-  <p>Tu web está online. Ahora puedes añadir tu interfaz aquí.</p>
+<div class="center" id="loginBox">
+  <h2>Accede a 1KB Minigames Hub</h2>
+  <div class="tabs">
+    <div class="tab active" id="tabLogin" onclick="switchTab('login')">Iniciar sesión</div>
+    <div class="tab" id="tabRegister" onclick="switchTab('register')">Registrarse</div>
+  </div>
+  <form id="formLogin" autocomplete="off" onsubmit="event.preventDefault();doLogin();">
+    <label>Email</label>
+    <input type="email" id="loginEmail" maxlength="80" required autocomplete="email">
+    <label>Contraseña</label>
+    <input type="password" id="loginPass" maxlength="64" required autocomplete="current-password">
+    <button type="submit">Entrar</button>
+    <div class="msg" id="loginMsg"></div>
+  </form>
+  <form id="formRegister" autocomplete="off" onsubmit="event.preventDefault();doRegister();" style="display:none;">
+    <label>Nickname</label>
+    <input type="text" id="registerNick" maxlength="30" required autocomplete="username">
+    <label>Email</label>
+    <input type="email" id="registerEmail" maxlength="80" required autocomplete="email">
+    <label>Contraseña</label>
+    <input type="password" id="registerPass" maxlength="64" required autocomplete="new-password">
+    <button type="submit">Crear cuenta</button>
+    <div class="msg" id="registerMsg"></div>
+  </form>
+  <div id="loading" style="display:none;">Conectando datos...</div>
+</div>
+<div class="center" id="loggedIn" style="display:none;">
+  <h2>¡Bienvenido!</h2>
+  <div id="userWelcome"></div>
+  <button id="logoutBtn" onclick="logout()">Cerrar sesión</button>
+</div>
+<script>
+  // ---- TU SUPABASE CONFIG ----
+  const SUPABASE_URL = "https://nwayukbsytbwzrxqcoco.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53YXl1a2JzeXRid3pyeHFjb2NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg2OTM3MzksImV4cCI6MjA2NDI2OTczOX0.tEt3NlVT87l0TyFXL0-09nZpWrPlFFWqlPQxgbrRyXw";
+  const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // Cambia entre login y registro
+  function switchTab(tab) {
+    document.getElementById('tabLogin').classList.remove('active');
+    document.getElementById('tabRegister').classList.remove('active');
+    document.getElementById('formLogin').style.display = 'none';
+    document.getElementById('formRegister').style.display = 'none';
+    document.getElementById('loginMsg').textContent = "";
+    document.getElementById('registerMsg').textContent = "";
+    hideLoading();
+    if (tab === 'login') {
+      document.getElementById('tabLogin').classList.add('active');
+      document.getElementById('formLogin').style.display = '';
+    } else {
+      document.getElementById('tabRegister').classList.add('active');
+      document.getElementById('formRegister').style.display = '';
+    }
+  }
+  function showLoading(msg) {
+    document.getElementById('loading').style.display = '';
+    document.getElementById('loading').textContent = msg;
+  }
+  function hideLoading() {
+    document.getElementById('loading').style.display = 'none';
+  }
+
+  // --------- LOGIN ----------
+  async function doLogin() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const pass = document.getElementById('loginPass').value;
+    document.getElementById('loginMsg').textContent = "";
+    if (!email.includes('@')) return document.getElementById('loginMsg').textContent = "Pon tu email real.";
+    if (pass.length < 4) return document.getElementById('loginMsg').textContent = "Pon una contraseña válida.";
+    showLoading("Conectando datos...");
+    let { data, error } = await client.auth.signInWithPassword({ email: email, password: pass });
+    hideLoading();
+    if (error) {
+      document.getElementById('loginMsg').textContent = "Email o contraseña incorrectos.";
+      return;
+    }
+    localStorage.setItem('kbemail', email);
+    showLoggedIn(email);
+  }
+
+  // --------- REGISTRO ----------
+  async function doRegister() {
+    const nick = document.getElementById('registerNick').value.trim();
+    const email = document.getElementById('registerEmail').value.trim();
+    const pass = document.getElementById('registerPass').value;
+    document.getElementById('registerMsg').textContent = "";
+    if (nick.length < 2) return document.getElementById('registerMsg').textContent = "Pon un nickname.";
+    if (!email.includes('@')) return document.getElementById('registerMsg').textContent = "Pon un email válido.";
+    if (pass.length < 4) return document.getElementById('registerMsg').textContent = "Contraseña de al menos 4 letras.";
+    showLoading("Conectando datos...");
+    // Guarda el nickname como "user_metadata"
+    let { data, error } = await client.auth.signUp({
+      email: email, password: pass,
+      options: { data: { nickname: nick } }
+    });
+    hideLoading();
+    if (error) {
+      if (error.message && (error.message.includes('already registered') || error.message.includes('User already registered') || error.message.includes('duplicate key'))) {
+        document.getElementById('registerMsg').textContent = "Ese email ya está registrado.";
+      } else {
+        document.getElementById('registerMsg').textContent = "Error: " + error.message;
+      }
+      return;
+    }
+    document.getElementById('registerMsg').textContent = "¡Cuenta creada! Confirma tu email antes de iniciar sesión.";
+  }
+
+  // --------- LOGOUT & UI ----------
+  async function showLoggedIn(email) {
+    document.getElementById('loginBox').style.display = 'none';
+    document.getElementById('loggedIn').style.display = '';
+    // Coge el nickname guardado en el perfil
+    let { data, error } = await client.auth.getUser();
+    let nick = email;
+    if (data && data.user && data.user.user_metadata && data.user.user_metadata.nickname) {
+      nick = data.user.user_metadata.nickname;
+    }
+    document.getElementById('userWelcome').textContent = "Bienvenido, " + nick + "!";
+  }
+  function logout() {
+    client.auth.signOut();
+    localStorage.removeItem('kbemail');
+    document.getElementById('loginBox').style.display = '';
+    document.getElementById('loggedIn').style.display = 'none';
+    document.getElementById('userWelcome').textContent = "";
+    hideLoading();
+  }
+
+  // --------- AUTO LOGIN EN F5 ----------
+  document.addEventListener("DOMContentLoaded", async ()=>{
+    let { data: { user } } = await client.auth.getUser();
+    if (user) {
+      let email = localStorage.getItem('kbemail') || (user.email || "");
+      showLoggedIn(email);
+    }
+  });
+</script>
 </body>
 </html>
