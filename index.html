@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>1KB Minigames Hub - Acceso</title>
+  <title>1KB Minigames Hub</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <link href="https://fonts.googleapis.com/css?family=Montserrat:700,400&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
@@ -10,31 +10,145 @@
     :root {
       --main: #292d36; --accent: #ffcc00; --bg: #f6f7fb; --txt: #191c23; --border: #e3e3e6;
       --btn: #292d36; --btn-txt: #fff; --btn-hover: #ffcc00; --btn-txt-hover: #191c23;
+      --card: #fff; --modal-bg: #23242bfa;
     }
     html, body { background: var(--bg); margin:0; padding:0; font-family: 'Montserrat', Arial, sans-serif; color: var(--txt);}
-    .center { max-width: 350px; margin: 65px auto 0 auto; background: #fff; border:1px solid var(--border); border-radius:18px; box-shadow:0 4px 28px #2c2c3b18; padding:36px 36px 25px 36px; }
-    h2 { text-align:center; font-weight:700; color:var(--main); margin-bottom:25px; }
-    .tabs { display:flex; justify-content:center; margin-bottom:23px; }
-    .tab { flex:1; text-align:center; font-weight:700; padding:11px 0; cursor:pointer; border-bottom:2.2px solid #eee; transition:.13s;}
-    .tab.active { color:var(--accent); border-color: var(--accent); background: #fffbe8;}
-    form { display:flex; flex-direction:column; }
-    label { font-size:.98em; margin-bottom:6px; color:#444; font-weight:600;}
-    input { font-size:1.08em; padding:12px 10px; border:1.4px solid var(--border); border-radius:7px; margin-bottom:18px;}
-    input:focus { border-color: var(--accent);}
-    button { background: var(--btn); color:var(--btn-txt); font-weight:700; border:none; border-radius:7px; padding:13px 0; font-size:1.08em; cursor:pointer; margin-top:6px; transition:.17s;}
-    button:hover { background:var(--btn-hover); color:var(--btn-txt-hover);}
-    .msg { margin-top:10px; text-align:center; color: #e38c00; font-size:.98em;}
-    #loggedIn { text-align:center; padding:17px 0;}
-    #logoutBtn {margin-top:18px;}
-    #loading { text-align:center; color:#999; margin-top:16px;}
+    * { box-sizing: border-box; }
+
+    /* HEADER */
+    #header {
+      position:fixed;top:0;left:0;width:100vw;height:58px;z-index:30;
+      background: var(--card); color:var(--main); border-bottom:1.5px solid var(--border);
+      box-shadow:0 1px 10px #24253011; display:flex;align-items:center;justify-content:space-between;
+      padding: 0 30px; font-weight:700;
+    }
+    #title { font-size: 1.35em; letter-spacing: 1px;}
+    #userMenuBtn { cursor:pointer; font-size:1.07em; background: none; border:none; color:var(--main); font-weight:700; position:relative; }
+    #userMenuBtn:hover { color: var(--accent); }
+    #userDropdown {
+      position: absolute; right: 0; top:44px; background: var(--card); border:1px solid var(--border);
+      border-radius:10px; min-width:220px; box-shadow:0 5px 30px #191b1e20; display:none; z-index:40;
+      padding:0;
+    }
+    #userDropdown.open { display: block;}
+    #userDropdown .ddtop { padding:16px 18px 8px 18px; border-bottom:1px solid #eee;}
+    #userDropdown .ddnick { font-size:1.08em; font-weight:700; }
+    #userDropdown .ddemail { font-size:.99em; color:#888; margin-top:2px; word-break:break-all;}
+    #userDropdown button, #userDropdown .deleteBtn {
+      width: 100%; text-align:left; background: none; border:none; padding:12px 18px;
+      font-size:1em; cursor:pointer; color:var(--main); border-top:1px solid #f4f4f6;
+      transition:.1s; outline:none;
+    }
+    #userDropdown .deleteBtn { color:#d00;}
+    #userDropdown button:hover, #userDropdown .deleteBtn:hover { background:#fffcde; color:var(--accent);}
+    #userDropdown .deleteBtn:hover { background:#ffe2e2;}
+    #overlay { position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:29;display:none;}
+
+    /* NOTIFICACIONES */
+    #notify {
+      position:fixed;top:68px;left:50%;transform:translateX(-50%);
+      min-width:200px;max-width:90vw;z-index:40;
+      background:#191c23f2;color:#fff;padding:16px 38px;
+      border-radius:12px;box-shadow:0 5px 26px #191b1e21;
+      font-size:1.08em;font-weight:600;opacity:0;pointer-events:none;
+      transition:.25s cubic-bezier(.5,1.7,.6,1);
+      text-align:center;
+    }
+    #notify.show { opacity:1; pointer-events:auto; }
+
+    /* MAIN LAYOUT */
+    #mainArea { padding-top:70px; max-width:1120px; margin:0 auto; }
+    .tabs { display:flex; gap:8px; margin:38px 0 24px 0;}
+    .tabBtn {
+      background: var(--card); color:var(--main); border:none;
+      padding:13px 42px; font-size:1.13em; font-weight:700; border-radius:8px 8px 0 0;
+      border-bottom:3px solid #eee; cursor:pointer; transition:.15s;
+    }
+    .tabBtn.active { border-bottom:3px solid var(--accent); background:#fffbe9; color:var(--accent);}
+    @media(max-width:700px){
+      .tabBtn { font-size:1em; padding:11px 12px;}
+      #mainArea { max-width:98vw;}
+    }
+
+    /* GRID DE JUEGOS */
+    #gamesGrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(275px,1fr)); gap:32px; margin-top:12px;}
+    .gameCard {
+      background: var(--card); border-radius:13px; box-shadow:0 3px 24px #1a1b1d14;
+      border:1.5px solid #ececec; padding:22px 20px 16px 20px; display:flex;flex-direction:column;align-items:flex-start; 
+      transition:box-shadow .13s; position:relative; overflow:hidden;
+    }
+    .gameCard:hover { box-shadow:0 8px 42px #ffcc0033; border-color:var(--accent);}
+    .gameCard h3 {margin:0 0 4px 0;color:var(--main);font-size:1.18em;}
+    .meta { color:#888; font-size: .96em; margin-bottom:8px;}
+    .desc { color:#292d36; margin-bottom:13px; font-size:1.02em;}
+    .votes { margin-bottom:8px; }
+    .votes .likes { color:#259d24; font-weight: 700;}
+    .votes .dislikes { color:#de1a1a; font-weight: 700;}
+    .btnRow { display:flex; gap:11px;}
+    .gameCard button { padding:7px 18px;font-size:.99em; border-radius:8px; font-weight:700; border:none; cursor:pointer; background:var(--main);color:#fff;transition:.15s;}
+    .gameCard button:hover { background:var(--accent); color:var(--btn-txt-hover);}
+    .gameCard .playBtn { background:var(--accent); color:var(--btn-txt-hover);}
+    .gameCard .playBtn:hover { background:var(--main); color:#fff;}
+
+    /* MODAL JUGAR */
+    #gameModalBG {display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:70;background:var(--modal-bg);align-items:center;justify-content:center;}
+    #gameModal {
+      background:var(--card);border-radius:15px;max-width:700px;width:94vw;
+      padding:33px 24px 24px 24px; box-shadow:0 9px 70px #181b1f36;position:relative;
+      display:flex; flex-direction:column; align-items:center;
+    }
+    #gameModal h2 { color: var(--main); margin-top: 0; text-align:center;}
+    #gameModal .close { position:absolute; top:15px; right:22px; font-size:2em; color:#999; cursor:pointer;}
+    #gameModal .modal-iframe { width:100%; min-height:350px; max-height:70vh; border-radius:11px; border:1.3px solid #e3e3e6; margin-top:20px;}
+    @media (max-width:700px){
+      #gameModal {padding:5vw 1vw 4vw 1vw;max-width:99vw;}
+      #gameModal .modal-iframe{ min-height:50vw; }
+    }
+
+    /* FORM SUBIR JUEGO */
+    #uploadPanel { background:var(--card); border-radius:15px; box-shadow:0 4px 22px #21222a12; padding:32px 27px 23px 27px; max-width:430px; margin:35px auto;}
+    #uploadPanel label { font-weight:600; color:var(--main);}
+    #uploadPanel input, #uploadPanel textarea {
+      width:100%;margin-bottom:14px;border:1.5px solid var(--border);border-radius:7px;padding:12px 10px;font-size:1.09em;
+    }
+    #uploadPanel textarea {min-height: 74px; resize:vertical; font-family:monospace;}
+    #codeSizeMsg {font-size:.98em;margin-bottom:7px;color:#666;}
+    #uploadBtn {margin-top:12px;}
+
+    /* SCROLL Y OCULTOS */
+    body { scrollbar-width:thin; }
+    ::-webkit-scrollbar { width:9px; background:#f6f7fb;}
+    ::-webkit-scrollbar-thumb { background:#e4e6ed; border-radius:12px;}
+    #mainArea, #gamesGrid, #gameModal, #uploadPanel { animation: fadeIn .5s cubic-bezier(.5,1.7,.6,1);}
+    @keyframes fadeIn { from {opacity:.4;transform:translateY(32px);} to {opacity:1;transform:none;} }
   </style>
 </head>
 <body>
+<!-- HEADER -->
+<div id="header" style="display:none;">
+  <div id="title">1KB Minigames Hub</div>
+  <button id="userMenuBtn">👤 <span id="nickShow"></span></button>
+  <div id="userDropdown">
+    <div class="ddtop">
+      <div class="ddnick" id="ddNick"></div>
+      <div class="ddemail" id="ddEmail"></div>
+    </div>
+    <button onclick="logout()">Cerrar sesión</button>
+    <button onclick="showResetPass()">Resetear contraseña</button>
+    <button class="deleteBtn" onclick="confirmDeleteUser()">Solicitar borrar cuenta</button>
+  </div>
+</div>
+<div id="overlay"></div>
+
+<!-- NOTIFICACIONES -->
+<div id="notify"></div>
+
+<!-- LOGIN/REGISTER -->
 <div class="center" id="loginBox">
   <h2>Accede a 1KB Minigames Hub</h2>
   <div class="tabs">
-    <div class="tab active" id="tabLogin" onclick="switchTab('login')">Iniciar sesión</div>
-    <div class="tab" id="tabRegister" onclick="switchTab('register')">Registrarse</div>
+    <div class="tabBtn active" id="tabLogin" onclick="switchTab('login')">Iniciar sesión</div>
+    <div class="tabBtn" id="tabRegister" onclick="switchTab('register')">Registrarse</div>
   </div>
   <form id="formLogin" autocomplete="off" onsubmit="event.preventDefault();doLogin();">
     <label>Email</label>
@@ -56,18 +170,64 @@
   </form>
   <div id="loading" style="display:none;">Conectando datos...</div>
 </div>
-<div class="center" id="loggedIn" style="display:none;">
-  <h2>¡Bienvenido!</h2>
-  <div id="userWelcome"></div>
-  <button id="logoutBtn" onclick="logout()">Cerrar sesión</button>
+
+<!-- MAIN UI -->
+<div id="mainArea" style="display:none;">
+  <div class="tabs">
+    <button class="tabBtn active" id="tabExplore" onclick="switchMainTab('explore')">Explorar juegos</button>
+    <button class="tabBtn" id="tabUpload" onclick="switchMainTab('upload')">Subir minijuego</button>
+  </div>
+  <!-- EXPLORAR -->
+  <div id="exploreTab">
+    <div id="gamesGrid"></div>
+  </div>
+  <!-- SUBIR -->
+  <div id="uploadTab" style="display:none;">
+    <div id="uploadPanel">
+      <h3>📤 Publica tu minijuego (máx 1KB)</h3>
+      <form id="uploadGameForm" autocomplete="off" onsubmit="event.preventDefault();uploadGame();">
+        <label>Título</label>
+        <input type="text" id="gameTitle" maxlength="40" required>
+        <label>Descripción</label>
+        <input type="text" id="gameDesc" maxlength="80" required>
+        <label>Código (HTML, CSS y JS en uno):</label>
+        <textarea id="gameCode" maxlength="1200" required placeholder="Pega aquí el código de tu juego (máx 1KB)"></textarea>
+        <div id="codeSizeMsg">Tamaño: 0 bytes / 1024 bytes</div>
+        <button type="submit" id="uploadBtn">Subir minijuego</button>
+      </form>
+    </div>
+  </div>
 </div>
+
+<!-- MODAL JUGAR JUEGO -->
+<div id="gameModalBG">
+  <div id="gameModal">
+    <span class="close" onclick="closeGameModal()">&times;</span>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
 <script>
-  // ---- TU SUPABASE CONFIG ----
+  // ---- SUPABASE CONFIG ----
   const SUPABASE_URL = "https://nwayukbsytbwzrxqcoco.supabase.co";
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53YXl1a2JzeXRid3pyeHFjb2NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg2OTM3MzksImV4cCI6MjA2NDI2OTczOX0.tEt3NlVT87l0TyFXL0-09nZpWrPlFFWqlPQxgbrRyXw";
   const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  // Cambia entre login y registro
+  // --- STATE ---
+  let currentTab = "explore";
+  let user = null;
+
+  // --------- TABS PRINCIPALES ----------
+  function switchMainTab(tab) {
+    currentTab = tab;
+    document.getElementById('tabExplore').classList.toggle('active', tab==='explore');
+    document.getElementById('tabUpload').classList.toggle('active', tab==='upload');
+    document.getElementById('exploreTab').style.display = tab==='explore' ? '' : 'none';
+    document.getElementById('uploadTab').style.display = tab==='upload' ? '' : 'none';
+    if(tab==='explore') loadGames();
+  }
+
+  // --------- LOGIN/REGISTER UI ----------
   function switchTab(tab) {
     document.getElementById('tabLogin').classList.remove('active');
     document.getElementById('tabRegister').classList.remove('active');
@@ -114,13 +274,12 @@
   async function doRegister() {
     const nick = document.getElementById('registerNick').value.trim();
     const email = document.getElementById('registerEmail').value.trim();
-    const pass = document.getElementById('registerPass').value;
+    const pass = document.getElementByElementById('registerPass').value;
     document.getElementById('registerMsg').textContent = "";
     if (nick.length < 2) return document.getElementById('registerMsg').textContent = "Pon un nickname.";
     if (!email.includes('@')) return document.getElementById('registerMsg').textContent = "Pon un email válido.";
     if (pass.length < 4) return document.getElementById('registerMsg').textContent = "Contraseña de al menos 4 letras.";
     showLoading("Conectando datos...");
-    // Guarda el nickname como "user_metadata"
     let { data, error } = await client.auth.signUp({
       email: email, password: pass,
       options: { data: { nickname: nick } }
@@ -140,45 +299,211 @@
   // --------- LOGOUT & UI ----------
   async function showLoggedIn(email) {
     document.getElementById('loginBox').style.display = 'none';
-    document.getElementById('loggedIn').style.display = '';
-    // Coge el nickname guardado en el perfil
-    let { data, error } = await client.auth.getUser();
+    document.getElementById('header').style.display = '';
+    document.getElementById('mainArea').style.display = '';
+    // Recoge nick/email reales
+    let { data } = await client.auth.getUser();
+    user = data.user;
     let nick = email;
-    if (data && data.user && data.user.user_metadata && data.user.user_metadata.nickname) {
-      nick = data.user.user_metadata.nickname;
+    if (user && user.user_metadata && user.user_metadata.nickname) {
+      nick = user.user_metadata.nickname;
     }
-    document.getElementById('userWelcome').textContent = "Bienvenido, " + nick + "!";
+    document.getElementById('nickShow').textContent = nick;
+    document.getElementById('ddNick').textContent = nick;
+    document.getElementById('ddEmail').textContent = user.email;
+    switchMainTab("explore");
+    loadGames();
   }
   function logout() {
     client.auth.signOut();
     localStorage.removeItem('kbemail');
     document.getElementById('loginBox').style.display = '';
-    document.getElementById('loggedIn').style.display = 'none';
-    document.getElementById('userWelcome').textContent = "";
-    hideLoading();
+    document.getElementById('header').style.display = 'none';
+    document.getElementById('mainArea').style.display = 'none';
+    hideDropdown();
+    user = null;
   }
 
   // --------- AUTO LOGIN EN F5 O CONFIRMACIÓN EMAIL ----------
   async function autoLogin() {
-    // 1. Detectar access_token en el hash de la URL tras confirmar email
     const params = new URLSearchParams(window.location.hash.slice(1));
     if(params.has('access_token')){
       const access_token = params.get('access_token');
       const refresh_token = params.get('refresh_token');
-      // Guarda el token de sesión en Supabase
       await client.auth.setSession({ access_token, refresh_token });
-      // Limpia el hash y recarga SOLO la ruta, no toda la URL (mantiene la subcarpeta)
-      window.location.href = window.location.pathname; // así siempre vuelve a la página correcta
+      window.location.href = window.location.pathname;
       return;
     }
-    // 2. Si ya hay sesión previa, muestra la pantalla logueada
-    let { data: { user } } = await client.auth.getUser();
-    if (user) {
-      let email = localStorage.getItem('kbemail') || (user.email || "");
+    let { data: { user: u } } = await client.auth.getUser();
+    if (u) {
+      let email = localStorage.getItem('kbemail') || (u.email || "");
       showLoggedIn(email);
     }
   }
   document.addEventListener("DOMContentLoaded", autoLogin);
+
+  // --------- DROPDOWN USER ----------
+  document.getElementById('userMenuBtn').onclick = function(e) {
+    let dd = document.getElementById('userDropdown');
+    dd.classList.toggle('open');
+    document.getElementById('overlay').style.display = dd.classList.contains('open') ? '' : 'none';
+  }
+  document.getElementById('overlay').onclick = hideDropdown;
+  function hideDropdown() {
+    document.getElementById('userDropdown').classList.remove('open');
+    document.getElementById('overlay').style.display = 'none';
+  }
+
+  // --------- NOTIFICACIONES ---------
+  let notifyTimeout = null;
+  function showNotify(msg, ok=true) {
+    let n = document.getElementById('notify');
+    n.textContent = msg;
+    n.style.background = ok ? "#191c23f2" : "#d41111f2";
+    n.classList.add('show');
+    clearTimeout(notifyTimeout);
+    notifyTimeout = setTimeout(()=>n.classList.remove('show'), 2900);
+  }
+
+  // --------- EXPLORAR JUEGOS ----------
+  async function loadGames() {
+    let grid = document.getElementById('gamesGrid');
+    grid.innerHTML = "<div style='color:#999;padding:33px;'>Cargando juegos...</div>";
+    let { data, error } = await client.from("games").select("*").order('created_at', {ascending:false}).limit(70);
+    if (error || !data) {
+      grid.innerHTML = "<div style='color:#d22;padding:33px;'>Error al cargar juegos.</div>";
+      return;
+    }
+    let html = "";
+    for (const game of data) {
+      html += `
+      <div class="gameCard">
+        <h3>${esc(game.title)}</h3>
+        <div class="meta">por <b>${esc(game.author_nickname||'??')}</b> · <span title="${game.created_at}">${timeAgo(game.created_at)}</span></div>
+        <div class="desc">${esc(game.description)}</div>
+        <div class="votes">
+          <span class="likes">👍 ${game.likes||0}</span> · 
+          <span class="dislikes">👎 ${game.dislikes||0}</span>
+        </div>
+        <div class="btnRow">
+          <button class="playBtn" onclick="openGameModal('${game.id}')">Jugar</button>
+          <button onclick="voteGame('${game.id}',1)">👍</button>
+          <button onclick="voteGame('${game.id}',-1)">👎</button>
+        </div>
+      </div>
+      `;
+    }
+    grid.innerHTML = html;
+  }
+
+  // --------- MODAL JUGAR JUEGO ---------
+  async function openGameModal(gameId) {
+    let { data, error } = await client.from("games").select("*").eq("id", gameId).single();
+    if (error || !data) { showNotify("Error cargando juego.", false); return; }
+    let modalBG = document.getElementById('gameModalBG');
+    let modal = document.getElementById('modalContent');
+    modal.innerHTML = `
+      <h2>${esc(data.title)}</h2>
+      <div style="color:#888;margin-bottom:10px;">de <b>${esc(data.author_nickname)}</b> · ${timeAgo(data.created_at)}</div>
+      <div style="margin-bottom:15px;">${esc(data.description)}</div>
+      <iframe class="modal-iframe" sandbox="allow-scripts allow-pointer-lock allow-same-origin" srcdoc="${htmlEncode(data.code)}"></iframe>
+    `;
+    modalBG.style.display = "flex";
+  }
+  function closeGameModal() {
+    document.getElementById('gameModalBG').style.display = "none";
+    document.getElementById('modalContent').innerHTML = "";
+  }
+  document.getElementById('gameModalBG').onclick = function(e) {
+    if (e.target === this) closeGameModal();
+  }
+
+  // --------- LIKE/DISLIKE (localStorage) ---------
+  async function voteGame(gameId, value) {
+    const voteKey = `vote_${gameId}`;
+    if (localStorage.getItem(voteKey)) {
+      showNotify("Ya votaste este juego.", false);
+      return;
+    }
+    let col = value === 1 ? "likes" : "dislikes";
+    let { error } = await client
+      .from("games")
+      .update({ [col]: supabase.raw(`?? + 1`, [col]) })
+      .eq("id", gameId);
+    if (!error) {
+      localStorage.setItem(voteKey, "1");
+      showNotify(value===1 ? "¡Like enviado!" : "¡Dislike enviado!", true);
+      loadGames();
+    }
+  }
+
+  // --------- SUBIR MINIJUEGO ----------
+  document.getElementById('gameCode').oninput = function() {
+    let len = this.value.length;
+    document.getElementById('codeSizeMsg').textContent = `Tamaño: ${len} bytes / 1024 bytes`;
+    document.getElementById('codeSizeMsg').style.color = (len > 1024) ? "#d00" : "#666";
+    document.getElementById('uploadBtn').disabled = (len > 1024);
+  }
+  async function uploadGame() {
+    let title = document.getElementById('gameTitle').value.trim();
+    let description = document.getElementById('gameDesc').value.trim();
+    let code = document.getElementById('gameCode').value;
+    if (!title || !description || !code) return showNotify("Rellena todos los campos.", false);
+    if (code.length > 1024) return showNotify("El código pasa de 1KB.", false);
+    // Mete usuario
+    let author_nickname = user.user_metadata.nickname || "";
+    let author_id = user.id || "";
+    let { error } = await client.from("games").insert([{
+      title, description, code, author_nickname, author_id
+    }]);
+    if (error) {
+      showNotify("Error subiendo el minijuego.", false);
+    } else {
+      showNotify("¡Juego subido!");
+      document.getElementById('gameTitle').value = "";
+      document.getElementById('gameDesc').value = "";
+      document.getElementById('gameCode').value = "";
+      document.getElementById('codeSizeMsg').textContent = "Tamaño: 0 bytes / 1024 bytes";
+      switchMainTab("explore");
+      loadGames();
+    }
+  }
+
+  // --------- UTILIDADES ---------
+  function esc(str) {
+    if (!str) return "";
+    return str.replace(/[<>&"'`]/g, c => ({
+      "<":"&lt;","&": "&amp;",">":"&gt;",
+      '"':"&quot;","'":"&#39;","`":"&#96;"
+    }[c]));
+  }
+  function htmlEncode(str) {
+    return str.replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function timeAgo(dateStr) {
+    const d = new Date(dateStr);
+    const s = Math.floor((Date.now()-d.getTime())/1000);
+    if (s<60) return "ahora";
+    if (s<3600) return `${Math.floor(s/60)} min`;
+    if (s<86400) return `${Math.floor(s/3600)} h`;
+    return `${Math.floor(s/86400)} d`;
+  }
+
+  // --- Opciones de usuario (reset pass y borrar cuenta) ---
+  function showResetPass() {
+    if (!user) return;
+    client.auth.resetPasswordForEmail(user.email)
+      .then(()=>showNotify("Te hemos enviado un email para resetear la contraseña."))
+      .catch(()=>showNotify("Error enviando email de reseteo.",false));
+    hideDropdown();
+  }
+  function confirmDeleteUser() {
+    if (!user) return;
+    if (!confirm("¿Seguro que quieres BORRAR tu cuenta? ¡Esta acción no se puede deshacer!")) return;
+    // Puedes poner aquí tu proceso real (en Supabase por defecto solo admins pueden borrar usuarios por seguridad)
+    showNotify("Solicitado borrado. Contacta con el admin para finalizar.");
+    hideDropdown();
+  }
 </script>
 </body>
 </html>
