@@ -158,14 +158,29 @@
     hideLoading();
   }
 
-  // --------- AUTO LOGIN EN F5 ----------
-  document.addEventListener("DOMContentLoaded", async ()=>{
+  // --------- AUTO LOGIN EN F5 O CONFIRMACIÓN EMAIL ----------
+  async function autoLogin() {
+    // 1. Detectar access_token en el hash de la URL tras confirmar email
+    const params = new URLSearchParams(window.location.hash.slice(1));
+    if(params.has('access_token')){
+      const access_token = params.get('access_token');
+      const refresh_token = params.get('refresh_token');
+      // Guarda el token de sesión en Supabase
+      await client.auth.setSession({ access_token, refresh_token });
+      // Limpia el hash (opcional)
+      window.location.hash = "";
+      // Recarga para mostrar pantalla de logueado
+      window.location.reload();
+      return;
+    }
+    // 2. Si ya hay sesión previa, muestra la pantalla logueada
     let { data: { user } } = await client.auth.getUser();
     if (user) {
       let email = localStorage.getItem('kbemail') || (user.email || "");
       showLoggedIn(email);
     }
-  });
+  }
+  document.addEventListener("DOMContentLoaded", autoLogin);
 </script>
 </body>
 </html>
