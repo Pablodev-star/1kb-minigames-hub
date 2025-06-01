@@ -9,13 +9,14 @@
   <style>
     :root {
       --main: #292d36; --accent: #ffcc00; --bg: #f6f7fb; --txt: #191c23; --border: #e3e3e6;
-      --btn: #292d36; --btn-txt: #fff; --btn-hover: #ffcc00; --btn-txt-hover: #191c23;
-      --card: #fff; --modal-bg: #23242bfa;
+      --playbtn-bg: #ffcc00; --playbtn-txt: #191c23; --playbtn-hover: #ffe375;
+      --card: #fff; --modal-bg: #23242be7;
+      --btn-shadow: 0 3px 12px #ffcc0033;
+      --btn-hover-shadow: 0 8px 32px #ffcc0039;
     }
     html, body { background: var(--bg); margin:0; padding:0; font-family: 'Montserrat', Arial, sans-serif; color: var(--txt);}
     * { box-sizing: border-box; }
 
-    /* HEADER */
     #header {
       position:fixed;top:0;left:0;width:100vw;height:58px;z-index:30;
       background: var(--card); color:var(--main); border-bottom:1.5px solid var(--border);
@@ -56,70 +57,144 @@
     }
     #notify.show { opacity:1; pointer-events:auto; }
 
+    /* LOGIN/REGISTRO PANEL */
+    .center { max-width: 350px; margin: 65px auto 0 auto; background: #fff; border:1px solid var(--border); border-radius:18px; box-shadow:0 4px 28px #2c2c3b18; padding:36px 36px 25px 36px; }
+    h2 { text-align:center; font-weight:700; color:var(--main); margin-bottom:25px; }
+    .tabs { display:flex; justify-content:center; margin-bottom:23px; gap:0;}
+    .tabBtn {
+      flex:1; text-align:center; font-weight:700; padding:11px 0; cursor:pointer;
+      border-bottom:2.2px solid #eee; transition:.13s; background:#fff; border:none; border-radius:13px 13px 0 0;
+      color:var(--main); font-size:1.08em;
+    }
+    .tabBtn.active {
+      color:var(--accent); border-color: var(--accent);
+      background: #fffbe8;
+      border-radius:17px 17px 0 0;
+    }
+    form { display:flex; flex-direction:column; }
+    label { font-size:.98em; margin-bottom:6px; color:#444; font-weight:600;}
+    input, textarea { font-size:1.08em; padding:12px 10px; border:1.4px solid var(--border); border-radius:7px; margin-bottom:18px;}
+    input:focus, textarea:focus { border-color: var(--accent);}
+    button, .btn-main {
+      background: var(--playbtn-bg); color:var(--playbtn-txt); font-weight:700;
+      border:none; border-radius:8px; padding:13px 0; font-size:1.08em; cursor:pointer; margin-top:6px; 
+      transition:.17s; box-shadow:var(--btn-shadow); transform:scale(1);
+    }
+    button:hover, .btn-main:hover {
+      background: var(--playbtn-hover); 
+      box-shadow:var(--btn-hover-shadow); 
+      transform:scale(1.06);
+      color:var(--playbtn-txt);
+    }
+    .msg { margin-top:10px; text-align:center; color: #e38c00; font-size:.98em;}
+    #loading { text-align:center; color:#999; margin-top:16px;}
+    .gameCard button, #viewGameBtn, #profileBtn, .voteBtn, #playInDetailBtn {
+      box-shadow:none; background:var(--main); color:#fff; border-radius:8px; padding:7px 18px; font-size:1em; margin-top:0; transition:.12s;
+    }
+    .gameCard .playBtn, #playInDetailBtn { background: var(--playbtn-bg); color: var(--playbtn-txt);}
+    .gameCard .playBtn:hover, #playInDetailBtn:hover {
+      background:var(--playbtn-hover); color:var(--playbtn-txt); box-shadow:var(--btn-hover-shadow); transform:scale(1.05);
+    }
+    .voteBtn, #viewGameBtn {
+      transition:.11s; 
+    }
+    .voteBtn:hover, #viewGameBtn:hover {
+      background:#ececec; color:var(--main); box-shadow:0 3px 10px #e3e3e689; transform:scale(1.06);
+    }
+    #playInDetailBtn { background:var(--playbtn-bg); color:var(--main);}
+    #playInDetailBtn:hover { background:var(--playbtn-hover); color:var(--main);}
+    @media(max-width:700px){ .tabBtn { font-size:1em; } .center { max-width:96vw;} }
+
     /* MAIN LAYOUT */
     #mainArea { padding-top:70px; max-width:1120px; margin:0 auto; }
-    .tabs { display:flex; gap:8px; margin:38px 0 24px 0;}
-    .tabBtn {
-      background: var(--card); color:var(--main); border:none;
-      padding:13px 42px; font-size:1.13em; font-weight:700; border-radius:8px 8px 0 0;
-      border-bottom:3px solid #eee; cursor:pointer; transition:.15s;
-    }
-    .tabBtn.active { border-bottom:3px solid var(--accent); background:#fffbe9; color:var(--accent);}
+    .tabs.main { gap:8px; margin:38px 0 24px 0;}
+    .tabBtn.main { padding:13px 42px; font-size:1.13em; border-radius:8px 8px 0 0;}
+    .tabBtn.main.active { border-bottom:3px solid var(--accent); background:#fffbe9; color:var(--accent);}
     @media(max-width:700px){
-      .tabBtn { font-size:1em; padding:11px 12px;}
+      .tabBtn.main { font-size:1em; padding:11px 12px;}
       #mainArea { max-width:98vw;}
+    }
+
+    /* BUSCADOR */
+    #searchArea { display:flex; flex-wrap:wrap; align-items:center; gap:8px 20px; margin:0 0 32px 0; }
+    #searchInput {
+      font-size:1.08em; padding:10px 13px; border:1.5px solid var(--border); border-radius:7px; min-width:170px; width:300px;
+    }
+    #searchInput:focus { border-color:var(--accent);}
+    .searchFilterBtn {
+      background:var(--card); color:var(--main); border:1.3px solid var(--border);
+      border-radius:7px; padding:8px 16px; font-size:1em; cursor:pointer; margin:0; transition:.13s;
+    }
+    .searchFilterBtn.active, .searchFilterBtn:active { background:var(--accent); color:var(--main);}
+    .searchFilterBtn:hover { box-shadow:0 2px 10px #ffcc0030; }
+    #randomBtn { background:var(--playbtn-bg); color:var(--main);}
+    #randomBtn:hover { background:var(--playbtn-hover);}
+    @media(max-width:700px){
+      #searchInput { width:99vw; min-width:100px;}
+      #searchArea { flex-direction:column; gap:9px;}
     }
 
     /* GRID DE JUEGOS */
     #gamesGrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(275px,1fr)); gap:32px; margin-top:12px;}
     .gameCard {
       background: var(--card); border-radius:13px; box-shadow:0 3px 24px #1a1b1d14;
-      border:1.5px solid #ececec; padding:22px 20px 16px 20px; display:flex;flex-direction:column;align-items:flex-start; 
+      border:1.5px solid #ececec; padding:22px 20px 16px 20px; display:flex;flex-direction:column;align-items:flex-start;
       transition:box-shadow .13s; position:relative; overflow:hidden;
     }
     .gameCard:hover { box-shadow:0 8px 42px #ffcc0033; border-color:var(--accent);}
     .gameCard h3 {margin:0 0 4px 0;color:var(--main);font-size:1.18em;}
     .meta { color:#888; font-size: .96em; margin-bottom:8px;}
+    .meta .authorLink { color: var(--accent); text-decoration:underline; cursor:pointer; }
     .desc { color:#292d36; margin-bottom:13px; font-size:1.02em;}
     .votes { margin-bottom:8px; }
     .votes .likes { color:#259d24; font-weight: 700;}
     .votes .dislikes { color:#de1a1a; font-weight: 700;}
     .btnRow { display:flex; gap:11px;}
-    .gameCard button { padding:7px 18px;font-size:.99em; border-radius:8px; font-weight:700; border:none; cursor:pointer; background:var(--main);color:#fff;transition:.15s;}
-    .gameCard button:hover { background:var(--accent); color:var(--btn-txt-hover);}
-    .gameCard .playBtn { background:var(--accent); color:var(--btn-txt-hover);}
-    .gameCard .playBtn:hover { background:var(--main); color:#fff;}
+    .gameCard button, .voteBtn { margin-top:0;}
+    /* Botón ver */
+    #viewGameBtn, #profileBtn { background: var(--accent); color: var(--main); border-radius:8px;}
+    #viewGameBtn:hover, #profileBtn:hover { background: var(--main); color: #fff;}
 
-    /* MODAL JUGAR */
-    #gameModalBG {display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:70;background:var(--modal-bg);align-items:center;justify-content:center;}
-    #gameModal {
-      background:var(--card);border-radius:15px;max-width:700px;width:94vw;
-      padding:33px 24px 24px 24px; box-shadow:0 9px 70px #181b1f36;position:relative;
-      display:flex; flex-direction:column; align-items:center;
-    }
-    #gameModal h2 { color: var(--main); margin-top: 0; text-align:center;}
-    #gameModal .close { position:absolute; top:15px; right:22px; font-size:2em; color:#999; cursor:pointer;}
-    #gameModal .modal-iframe { width:100%; min-height:350px; max-height:70vh; border-radius:11px; border:1.3px solid #e3e3e6; margin-top:20px;}
-    @media (max-width:700px){
-      #gameModal {padding:5vw 1vw 4vw 1vw;max-width:99vw;}
-      #gameModal .modal-iframe{ min-height:50vw; }
-    }
+    /* DETALLE DE JUEGO */
+    #gameDetail { background:var(--card); border-radius:13px; box-shadow:0 3px 24px #1a1b1d18;
+      border:1.5px solid #ececec; max-width: 620px; margin:40px auto 40px auto; padding:32px 23px 30px 23px;}
+    #gameDetail h2 { color: var(--main); margin:0 0 6px 0;}
+    #gameDetail .meta { color:#888; margin-bottom:15px; }
+    #gameDetail .desc { font-size:1.09em; margin-bottom:23px; color:#333;}
+    #gameDetail .votes { margin-bottom:15px; }
+    #gameDetail .btnRow { gap:12px;}
+    #playArea { margin-top:28px; }
+    #backBtn { background: #fffbe8; color: var(--main); border:1.2px solid var(--accent); padding:6px 19px; border-radius:8px; margin-bottom:20px; font-size:1em; cursor:pointer;}
+    #backBtn:hover { background: var(--accent); color: #fff; box-shadow:0 3px 10px #ffcc0030; }
 
-    /* FORM SUBIR JUEGO */
-    #uploadPanel { background:var(--card); border-radius:15px; box-shadow:0 4px 22px #21222a12; padding:32px 27px 23px 27px; max-width:430px; margin:35px auto;}
-    #uploadPanel label { font-weight:600; color:var(--main);}
-    #uploadPanel input, #uploadPanel textarea {
-      width:100%;margin-bottom:14px;border:1.5px solid var(--border);border-radius:7px;padding:12px 10px;font-size:1.09em;
-    }
-    #uploadPanel textarea {min-height: 74px; resize:vertical; font-family:monospace;}
-    #codeSizeMsg {font-size:.98em;margin-bottom:7px;color:#666;}
-    #uploadBtn {margin-top:12px;}
+    /* JUEGO FULLSCREEN */
+    #fullscreenGame { position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:100;
+      background:var(--modal-bg);display:flex;align-items:center;justify-content:center;flex-direction:column;}
+    #fullscreenGame .close { position:absolute; top:18px; right:32px; font-size:2.2em; color:var(--accent); background:none; border:none; cursor:pointer; z-index:2;}
+    #fullscreenGame iframe { width: 90vw; max-width:700px; height: 80vh; border-radius:18px; border:2px solid #ffcc00; background:#fff;}
+    @media(max-width:700px){ #fullscreenGame iframe { width:97vw; height:65vw; min-height:60vw;} }
 
-    /* SCROLL Y OCULTOS */
+    /* PERFIL DE USUARIO */
+    #profileDetail { background:var(--card); border-radius:13px; box-shadow:0 3px 24px #1a1b1d16;
+      border:1.5px solid #ececec; max-width:600px; margin:40px auto 40px auto; padding:32px 23px 22px 23px;}
+    #profileDetail h2 { color: var(--main); margin:0 0 6px 0;}
+    #profileDetail .info { margin-bottom:16px;}
+    #profileDetail .label {color:#888;font-size:.99em;}
+    #profileDetail .games {margin-top:18px;}
+    #profileDetail .games h3 {font-size:1.07em;margin:8px 0;}
+    #profileDetail .gameMiniCard {
+      background:#fcfcf6;border-radius:8px;border:1px solid #f2f2df;padding:8px 13px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;
+    }
+    #profileDetail .gameMiniCard .miniTitle {color:var(--main);}
+    #profileDetail .gameMiniCard .votes {font-size:.99em;}
+    #profileDetail #profileBackBtn {margin-bottom:18px;}
+    @media(max-width:700px){
+      #gameDetail, #profileDetail { max-width:97vw; padding:6vw 2vw;}
+    }
     body { scrollbar-width:thin; }
     ::-webkit-scrollbar { width:9px; background:#f6f7fb;}
     ::-webkit-scrollbar-thumb { background:#e4e6ed; border-radius:12px;}
-    #mainArea, #gamesGrid, #gameModal, #uploadPanel { animation: fadeIn .5s cubic-bezier(.5,1.7,.6,1);}
+    #mainArea, #gamesGrid, #gameDetail, #uploadPanel, #profileDetail { animation: fadeIn .5s cubic-bezier(.5,1.7,.6,1);}
     @keyframes fadeIn { from {opacity:.4;transform:translateY(32px);} to {opacity:1;transform:none;} }
   </style>
 </head>
@@ -133,6 +208,7 @@
       <div class="ddnick" id="ddNick"></div>
       <div class="ddemail" id="ddEmail"></div>
     </div>
+    <button onclick="gotoProfile()">Ver mi perfil</button>
     <button onclick="logout()">Cerrar sesión</button>
     <button onclick="showResetPass()">Resetear contraseña</button>
     <button class="deleteBtn" onclick="confirmDeleteUser()">Solicitar borrar cuenta</button>
@@ -147,15 +223,15 @@
 <div class="center" id="loginBox">
   <h2>Accede a 1KB Minigames Hub</h2>
   <div class="tabs">
-    <div class="tabBtn active" id="tabLogin" onclick="switchTab('login')">Iniciar sesión</div>
-    <div class="tabBtn" id="tabRegister" onclick="switchTab('register')">Registrarse</div>
+    <button class="tabBtn active" id="tabLogin" onclick="switchTab('login')">Iniciar sesión</button>
+    <button class="tabBtn" id="tabRegister" onclick="switchTab('register')">Registrarse</button>
   </div>
   <form id="formLogin" autocomplete="off" onsubmit="event.preventDefault();doLogin();">
     <label>Email</label>
     <input type="email" id="loginEmail" maxlength="80" required autocomplete="email">
     <label>Contraseña</label>
     <input type="password" id="loginPass" maxlength="64" required autocomplete="current-password">
-    <button type="submit">Entrar</button>
+    <button type="submit" class="btn-main">Entrar</button>
     <div class="msg" id="loginMsg"></div>
   </form>
   <form id="formRegister" autocomplete="off" onsubmit="event.preventDefault();doRegister();" style="display:none;">
@@ -165,7 +241,7 @@
     <input type="email" id="registerEmail" maxlength="80" required autocomplete="email">
     <label>Contraseña</label>
     <input type="password" id="registerPass" maxlength="64" required autocomplete="new-password">
-    <button type="submit">Crear cuenta</button>
+    <button type="submit" class="btn-main">Crear cuenta</button>
     <div class="msg" id="registerMsg"></div>
   </form>
   <div id="loading" style="display:none;">Conectando datos...</div>
@@ -173,12 +249,20 @@
 
 <!-- MAIN UI -->
 <div id="mainArea" style="display:none;">
-  <div class="tabs">
-    <button class="tabBtn active" id="tabExplore" onclick="switchMainTab('explore')">Explorar juegos</button>
-    <button class="tabBtn" id="tabUpload" onclick="switchMainTab('upload')">Subir minijuego</button>
+  <div class="tabs main">
+    <button class="tabBtn main active" id="tabExplore" onclick="switchMainTab('explore')">Explorar juegos</button>
+    <button class="tabBtn main" id="tabUpload" onclick="switchMainTab('upload')">Subir minijuego</button>
   </div>
   <!-- EXPLORAR -->
   <div id="exploreTab">
+    <div id="searchArea">
+      <input type="text" id="searchInput" placeholder="Buscar por nombre, autor o ID..." autocomplete="off">
+      <button class="searchFilterBtn active" id="filterTop" onclick="setSearchFilter('top')">Top</button>
+      <button class="searchFilterBtn" id="filterTrend" onclick="setSearchFilter('trend')">Tendencia</button>
+      <button class="searchFilterBtn" id="filterNew" onclick="setSearchFilter('new')">Nuevos</button>
+      <button class="searchFilterBtn" id="filterClassic" onclick="setSearchFilter('classic')">Clásicos</button>
+      <button id="randomBtn" onclick="randomGame()">🎲 Random</button>
+    </div>
     <div id="gamesGrid"></div>
   </div>
   <!-- SUBIR -->
@@ -193,18 +277,19 @@
         <label>Código (HTML, CSS y JS en uno):</label>
         <textarea id="gameCode" maxlength="1200" required placeholder="Pega aquí el código de tu juego (máx 1KB)"></textarea>
         <div id="codeSizeMsg">Tamaño: 0 bytes / 1024 bytes</div>
-        <button type="submit" id="uploadBtn">Subir minijuego</button>
+        <button type="submit" id="uploadBtn" class="btn-main">Subir minijuego</button>
       </form>
     </div>
   </div>
+  <!-- DETALLE DE JUEGO (rellenado por JS) -->
+  <div id="gameDetail" style="display:none;"></div>
+  <!-- PERFIL DE USUARIO (rellenado por JS) -->
+  <div id="profileDetail" style="display:none;"></div>
 </div>
 
-<!-- MODAL JUGAR JUEGO -->
-<div id="gameModalBG">
-  <div id="gameModal">
-    <span class="close" onclick="closeGameModal()">&times;</span>
-    <div id="modalContent"></div>
-  </div>
+<div id="fullscreenGame" style="display:none;">
+  <button class="close" onclick="closeFullscreenGame()">×</button>
+  <div id="fullscreenGameArea"></div>
 </div>
 
 <script>
@@ -216,6 +301,10 @@
   // --- STATE ---
   let currentTab = "explore";
   let user = null;
+  let currentGameDetail = null;
+  let currentProfileDetail = null;
+  let firstUserId = null;
+  let allGamesCache = [];
 
   // --------- TABS PRINCIPALES ----------
   function switchMainTab(tab) {
@@ -224,6 +313,8 @@
     document.getElementById('tabUpload').classList.toggle('active', tab==='upload');
     document.getElementById('exploreTab').style.display = tab==='explore' ? '' : 'none';
     document.getElementById('uploadTab').style.display = tab==='upload' ? '' : 'none';
+    document.getElementById('gameDetail').style.display = 'none';
+    document.getElementById('profileDetail').style.display = 'none';
     if(tab==='explore') loadGames();
   }
 
@@ -267,18 +358,26 @@
       return;
     }
     localStorage.setItem('kbemail', email);
-    showLoggedIn(email);
+    await showLoggedIn();
   }
 
   // --------- REGISTRO ----------
   async function doRegister() {
     const nick = document.getElementById('registerNick').value.trim();
     const email = document.getElementById('registerEmail').value.trim();
-    const pass = document.getElementByElementById('registerPass').value;
+    const pass = document.getElementById('registerPass').value;
     document.getElementById('registerMsg').textContent = "";
     if (nick.length < 2) return document.getElementById('registerMsg').textContent = "Pon un nickname.";
     if (!email.includes('@')) return document.getElementById('registerMsg').textContent = "Pon un email válido.";
     if (pass.length < 4) return document.getElementById('registerMsg').textContent = "Contraseña de al menos 4 letras.";
+    showLoading("Comprobando nickname...");
+    // NICK ÚNICO
+    let { data: usersWithNick } = await client.from("games").select("author_nickname").eq("author_nickname", nick).limit(1);
+    if (usersWithNick && usersWithNick.length > 0) {
+      hideLoading();
+      document.getElementById('registerMsg').textContent = "Ese nickname ya está en uso.";
+      return;
+    }
     showLoading("Conectando datos...");
     let { data, error } = await client.auth.signUp({
       email: email, password: pass,
@@ -297,31 +396,27 @@
   }
 
   // --------- LOGOUT & UI ----------
-  async function showLoggedIn(email) {
-    document.getElementById('loginBox').style.display = 'none';
-    document.getElementById('header').style.display = '';
-    document.getElementById('mainArea').style.display = '';
-    // Recoge nick/email reales
-    let { data } = await client.auth.getUser();
+  async function showLoggedIn() {
+    let { data, error } = await client.auth.getUser();
+    if (!data.user) return;
     user = data.user;
-    let nick = email;
-    if (user && user.user_metadata && user.user_metadata.nickname) {
-      nick = user.user_metadata.nickname;
-    }
-    document.getElementById('nickShow').textContent = nick;
-    document.getElementById('ddNick').textContent = nick;
-    document.getElementById('ddEmail').textContent = user.email;
-    switchMainTab("explore");
+    document.getElementById('loginBox').style.display = 'none';
+    document.getElementById('mainArea').style.display = '';
+    document.getElementById('header').style.display = '';
+    document.getElementById('nickShow').textContent = user.user_metadata.nickname || user.email;
+    document.getElementById('ddNick').textContent = user.user_metadata.nickname || "";
+    document.getElementById('ddEmail').textContent = user.email || "";
+    await fetchFirstUserId();
     loadGames();
   }
-  function logout() {
-    client.auth.signOut();
-    localStorage.removeItem('kbemail');
-    document.getElementById('loginBox').style.display = '';
-    document.getElementById('header').style.display = 'none';
-    document.getElementById('mainArea').style.display = 'none';
-    hideDropdown();
+  async function logout() {
+    await client.auth.signOut();
     user = null;
+    localStorage.removeItem('kbemail');
+    document.getElementById('mainArea').style.display = 'none';
+    document.getElementById('header').style.display = 'none';
+    document.getElementById('loginBox').style.display = '';
+    hideDropdown();
   }
 
   // --------- AUTO LOGIN EN F5 O CONFIRMACIÓN EMAIL ----------
@@ -335,138 +430,289 @@
       return;
     }
     let { data: { user: u } } = await client.auth.getUser();
-    if (u) {
-      let email = localStorage.getItem('kbemail') || (u.email || "");
-      showLoggedIn(email);
-    }
+    if (u) showLoggedIn();
   }
   document.addEventListener("DOMContentLoaded", autoLogin);
 
-  // --------- DROPDOWN USER ----------
-  document.getElementById('userMenuBtn').onclick = function(e) {
-    let dd = document.getElementById('userDropdown');
-    dd.classList.toggle('open');
-    document.getElementById('overlay').style.display = dd.classList.contains('open') ? '' : 'none';
-  }
-  document.getElementById('overlay').onclick = hideDropdown;
-  function hideDropdown() {
-    document.getElementById('userDropdown').classList.remove('open');
-    document.getElementById('overlay').style.display = 'none';
+  // --------- PRIMER USER ES ADMIN ---------
+  async function fetchFirstUserId() {
+    // Consigue el primer id de autor registrado en juegos, lo toma como admin.
+    if (!firstUserId) {
+      let { data: firstGame } = await client.from("games").select("author_id").order("created_at").limit(1);
+      if (firstGame && firstGame.length > 0) firstUserId = firstGame[0].author_id;
+    }
   }
 
-  // --------- NOTIFICACIONES ---------
-  let notifyTimeout = null;
-  function showNotify(msg, ok=true) {
-    let n = document.getElementById('notify');
-    n.textContent = msg;
-    n.style.background = ok ? "#191c23f2" : "#d41111f2";
-    n.classList.add('show');
-    clearTimeout(notifyTimeout);
-    notifyTimeout = setTimeout(()=>n.classList.remove('show'), 2900);
+  // --------- JUEGOS GRID + BUSCADOR ---------
+  let currentFilter = "top";
+  document.getElementById('searchInput').addEventListener('input', ()=>loadGames());
+  function setSearchFilter(filter) {
+    currentFilter = filter;
+    document.querySelectorAll('.searchFilterBtn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('filterTop').classList.toggle('active', filter==="top");
+    document.getElementById('filterTrend').classList.toggle('active', filter==="trend");
+    document.getElementById('filterNew').classList.toggle('active', filter==="new");
+    document.getElementById('filterClassic').classList.toggle('active', filter==="classic");
+    loadGames();
   }
-
-  // --------- EXPLORAR JUEGOS ----------
   async function loadGames() {
-    let grid = document.getElementById('gamesGrid');
-    grid.innerHTML = "<div style='color:#999;padding:33px;'>Cargando juegos...</div>";
-    let { data, error } = await client.from("games").select("*").order('created_at', {ascending:false}).limit(70);
-    if (error || !data) {
-      grid.innerHTML = "<div style='color:#d22;padding:33px;'>Error al cargar juegos.</div>";
+    let { data, error } = await client.from("games").select("*").order('created_at', {ascending:false}).limit(200);
+    if (error) {
+      showNotify("Error al cargar juegos",true);
+      document.getElementById('gamesGrid').innerHTML = "<div class='msg'>No se pudieron cargar los juegos.</div>";
       return;
     }
+    allGamesCache = data || [];
+    let search = normalize(document.getElementById('searchInput').value);
+    let filtered = allGamesCache.filter(g => {
+      let nombre = normalize(g.title || "");
+      let autor = normalize(g.author_nickname || "");
+      let gid = (g.id||"").toString().toLowerCase();
+      return nombre.includes(search) || autor.includes(search) || (search && gid.includes(search));
+    });
+    // Filtros y orden
+    if (currentFilter=="top") {
+      filtered.sort((a,b)=>((b.likes||0)-(b.dislikes||0))-((a.likes||0)-(a.dislikes||0)));
+    } else if (currentFilter=="trend") {
+      filtered.sort((a,b)=>{
+        // tendencia: (likes-dislikes)/horas desde creación (más recientes con votos positivos arriba)
+        let ah = Math.max(1,(Date.now()-new Date(a.created_at))/3600000), bh = Math.max(1,(Date.now()-new Date(b.created_at))/3600000);
+        let av = ((a.likes||0)-(a.dislikes||0))/ah, bv = ((b.likes||0)-(b.dislikes||0))/bh;
+        return bv-av;
+      });
+    } else if (currentFilter=="new") {
+      filtered.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+    } else if (currentFilter=="classic") {
+      filtered.sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+    }
+    renderGames(filtered);
+  }
+  function normalize(str) {
+    return (str||"").toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // quita tildes
+      .replace(/[^a-z0-9]/gi,""); // quita símbolos y espacios
+  }
+  function renderGames(games) {
     let html = "";
-    for (const game of data) {
+    for (const game of games) {
       html += `
       <div class="gameCard">
         <h3>${esc(game.title)}</h3>
-        <div class="meta">por <b>${esc(game.author_nickname||'??')}</b> · <span title="${game.created_at}">${timeAgo(game.created_at)}</span></div>
+        <div class="meta">
+          Autor: <span class="authorLink" onclick="gotoProfile('${game.author_id}')">${esc(game.author_nickname||"")}</span> · <span title="${game.created_at}">${timeAgo(game.created_at)}</span>
+        </div>
         <div class="desc">${esc(game.description)}</div>
         <div class="votes">
           <span class="likes">👍 ${game.likes||0}</span> · 
           <span class="dislikes">👎 ${game.dislikes||0}</span>
         </div>
         <div class="btnRow">
-          <button class="playBtn" onclick="openGameModal('${game.id}')">Jugar</button>
-          <button onclick="voteGame('${game.id}',1)">👍</button>
-          <button onclick="voteGame('${game.id}',-1)">👎</button>
+          <button id="viewGameBtn" onclick="viewGame('${game.id}')">Ver</button>
         </div>
       </div>
       `;
     }
-    grid.innerHTML = html;
+    document.getElementById('gamesGrid').innerHTML = games.length ? html : "<div class='msg'>No hay juegos que coincidan.</div>";
   }
 
-  // --------- MODAL JUGAR JUEGO ---------
-  async function openGameModal(gameId) {
+  // --------- RANDOM GAME BUTTON ---------
+  function randomGame() {
+    if (!allGamesCache.length) return;
+    let idx = Math.floor(Math.random()*allGamesCache.length);
+    viewGame(allGamesCache[idx].id);
+  }
+
+  // --------- DETALLE DE JUEGO ---------
+  async function viewGame(gameId) {
+    switchMainTab(""); // oculta tabs y grids
+    document.getElementById('exploreTab').style.display = 'none';
+    document.getElementById('uploadTab').style.display = 'none';
+    document.getElementById('gameDetail').style.display = '';
+    document.getElementById('profileDetail').style.display = 'none';
+
     let { data, error } = await client.from("games").select("*").eq("id", gameId).single();
-    if (error || !data) { showNotify("Error cargando juego.", false); return; }
-    let modalBG = document.getElementById('gameModalBG');
-    let modal = document.getElementById('modalContent');
-    modal.innerHTML = `
+    if (error || !data) { showNotify("No encontrado",true); return; }
+    currentGameDetail = data;
+
+    let html = `
+      <button id="backBtn" onclick="switchMainTab('explore')">← Volver</button>
       <h2>${esc(data.title)}</h2>
-      <div style="color:#888;margin-bottom:10px;">de <b>${esc(data.author_nickname)}</b> · ${timeAgo(data.created_at)}</div>
-      <div style="margin-bottom:15px;">${esc(data.description)}</div>
-      <iframe class="modal-iframe" sandbox="allow-scripts allow-pointer-lock allow-same-origin" srcdoc="${htmlEncode(data.code)}"></iframe>
+      <div class="meta">
+        Autor: <span class="authorLink" onclick="gotoProfile('${data.author_id}')">${esc(data.author_nickname||"")}</span>
+        · <span title="${data.created_at}">${timeAgo(data.created_at)}</span>
+      </div>
+      <div class="desc">${esc(data.description)}</div>
+      <div class="votes">
+        <span class="likes">👍 ${data.likes||0}</span> · 
+        <span class="dislikes">👎 ${data.dislikes||0}</span>
+      </div>
+      <div class="btnRow">
+        <button class="voteBtn" onclick="voteGame('${data.id}', 1)">👍 Like</button>
+        <button class="voteBtn" onclick="voteGame('${data.id}', -1)">👎 Dislike</button>
+        <button id="playInDetailBtn" onclick="playInDetail('${data.id}')">Jugar</button>
+      </div>
+      <div id="playArea"></div>
     `;
-    modalBG.style.display = "flex";
-  }
-  function closeGameModal() {
-    document.getElementById('gameModalBG').style.display = "none";
-    document.getElementById('modalContent').innerHTML = "";
-  }
-  document.getElementById('gameModalBG').onclick = function(e) {
-    if (e.target === this) closeGameModal();
+    document.getElementById('gameDetail').innerHTML = html;
   }
 
-  // --------- LIKE/DISLIKE (localStorage) ---------
+  // --------- JUGAR EN PÁGINA DETALLADA (FULLSCREEN) ---------
+  async function playInDetail(gameId) {
+    let { data, error } = await client.from("games").select("*").eq("id", gameId).single();
+    if (error || !data) { showNotify("Error al cargar el juego", true); return; }
+    // Pantalla completa de juego
+    document.getElementById('fullscreenGame').style.display = 'flex';
+    document.getElementById('fullscreenGameArea').innerHTML = `
+      <iframe style="width:90vw;max-width:700px;height:80vh;border-radius:18px;border:2px solid #ffcc00;background:#fff;"
+        sandbox="allow-scripts allow-pointer-lock allow-same-origin" srcdoc='${encodeHTML(data.code)}'></iframe>
+    `;
+  }
+  function closeFullscreenGame() {
+    document.getElementById('fullscreenGame').style.display = 'none';
+    // Si estabas viendo el detalle, mantente ahí.
+    if (currentGameDetail) viewGame(currentGameDetail.id);
+    else switchMainTab('explore');
+  }
+
+  // --------- LIKE / DISLIKE ---------
   async function voteGame(gameId, value) {
     const voteKey = `vote_${gameId}`;
     if (localStorage.getItem(voteKey)) {
-      showNotify("Ya votaste este juego.", false);
-      return;
+      showNotify("Ya votaste este juego.", true); return;
     }
     let col = value === 1 ? "likes" : "dislikes";
-    let { error } = await client
-      .from("games")
-      .update({ [col]: supabase.raw(`?? + 1`, [col]) })
-      .eq("id", gameId);
-    if (!error) {
+    // Actualización segura (por ahora solo suma local, para demo, mejor usa RPC en producción)
+    let { data, error } = await client.from("games").select("*").eq("id", gameId).single();
+    if (error || !data) return showNotify("Error al votar", true);
+    let newCount = (data[col]||0) + 1;
+    let { error: err2 } = await client.from("games").update({ [col]: newCount }).eq("id", gameId);
+    if (!err2) {
       localStorage.setItem(voteKey, "1");
-      showNotify(value===1 ? "¡Like enviado!" : "¡Dislike enviado!", true);
-      loadGames();
-    }
+      if(document.getElementById('gameDetail').style.display !== 'none') viewGame(gameId);
+      else loadGames();
+      showNotify(value === 1 ? "¡Votaste 👍!" : "¡Votaste 👎!");
+    } else showNotify("Error al votar",true);
   }
 
-  // --------- SUBIR MINIJUEGO ----------
-  document.getElementById('gameCode').oninput = function() {
-    let len = this.value.length;
-    document.getElementById('codeSizeMsg').textContent = `Tamaño: ${len} bytes / 1024 bytes`;
-    document.getElementById('codeSizeMsg').style.color = (len > 1024) ? "#d00" : "#666";
-    document.getElementById('uploadBtn').disabled = (len > 1024);
+  // --------- SUBIR MINIJUEGO ---------
+  document.getElementById('gameCode').addEventListener('input', updateCodeSizeMsg);
+  function updateCodeSizeMsg() {
+    let code = document.getElementById('gameCode').value || "";
+    document.getElementById('codeSizeMsg').textContent = "Tamaño: " + encodeURIComponent(code).length + " bytes / 1024 bytes";
+    if (encodeURIComponent(code).length > 1024) {
+      document.getElementById('codeSizeMsg').style.color = "#d11";
+    } else {
+      document.getElementById('codeSizeMsg').style.color = "#666";
+    }
   }
   async function uploadGame() {
     let title = document.getElementById('gameTitle').value.trim();
     let description = document.getElementById('gameDesc').value.trim();
-    let code = document.getElementById('gameCode').value;
-    if (!title || !description || !code) return showNotify("Rellena todos los campos.", false);
-    if (code.length > 1024) return showNotify("El código pasa de 1KB.", false);
-    // Mete usuario
-    let author_nickname = user.user_metadata.nickname || "";
-    let author_id = user.id || "";
-    let { error } = await client.from("games").insert([{
-      title, description, code, author_nickname, author_id
+    let code = document.getElementById('gameCode').value.trim();
+    if (title.length < 2) return showNotify("Pon un título más largo", true);
+    if (description.length < 2) return showNotify("Pon una descripción", true);
+    if (encodeURIComponent(code).length > 1024) return showNotify("Tu código supera 1KB", true);
+    if (!user) return showNotify("Tienes que iniciar sesión", true);
+    let { data, error } = await client.from("games").insert([{
+      title, description, code,
+      author_id: user.id,
+      author_nickname: user.user_metadata.nickname || "",
+      likes: 0, dislikes: 0
     }]);
-    if (error) {
-      showNotify("Error subiendo el minijuego.", false);
-    } else {
+    if (error) showNotify("Error al subir: " + (error.message || error), true);
+    else {
       showNotify("¡Juego subido!");
-      document.getElementById('gameTitle').value = "";
-      document.getElementById('gameDesc').value = "";
-      document.getElementById('gameCode').value = "";
-      document.getElementById('codeSizeMsg').textContent = "Tamaño: 0 bytes / 1024 bytes";
-      switchMainTab("explore");
+      document.getElementById('uploadGameForm').reset();
+      updateCodeSizeMsg();
+      switchMainTab('explore');
       loadGames();
     }
+  }
+
+  // --------- PERFILES ---------
+  async function gotoProfile(id) {
+    let userId = id || (user && user.id);
+    if (!userId) return showNotify("No logeado",true);
+    switchMainTab(""); // oculta todo menos el perfil
+    document.getElementById('gameDetail').style.display = 'none';
+    document.getElementById('exploreTab').style.display = 'none';
+    document.getElementById('uploadTab').style.display = 'none';
+    document.getElementById('profileDetail').style.display = '';
+    let userNick = "";
+    let userEmail = "";
+    let esAdmin = (user && user.id === firstUserId);
+    if (user && user.id === userId) {
+      userNick = user.user_metadata.nickname;
+      userEmail = user.email;
+    } else {
+      let juegos = allGamesCache.filter(g=>g.author_id === userId);
+      userNick = (juegos && juegos.length > 0) ? juegos[0].author_nickname : "¿?";
+    }
+    let { data: juegos } = await client.from("games").select("*").eq("author_id", userId).order("created_at",{ascending:false}).limit(100);
+    let totalLikes = juegos ? juegos.reduce((acc,g)=>acc+(g.likes||0),0) : 0;
+    let totalDislikes = juegos ? juegos.reduce((acc,g)=>acc+(g.dislikes||0),0) : 0;
+    let html = `
+      <button id="profileBackBtn" onclick="switchMainTab('explore')">← Volver</button>
+      <h2>${esc(userNick||"Sin nick")}</h2>
+      <div class="info">
+        ${user && user.id === userId ? `<div class="label">Email: <b>${esc(userEmail||"")}</b></div>` : ""}
+        ${(esAdmin && userId) ? `<div class="label">ID: <span style="font-size:.97em;color:#aaa;">${esc(userId||"")}</span></div>` : ""}
+        <div class="label">Total juegos: <b>${juegos.length||0}</b></div>
+        <div class="label">Likes totales: <span style="color:#259d24;">${totalLikes}</span> &nbsp; · &nbsp; Dislikes: <span style="color:#de1a1a;">${totalDislikes}</span></div>
+        ${user && user.id === userId ? `<button style="margin-top:14px;" onclick="alert('Editar perfil próximamente')">Editar perfil</button>` : ""}
+      </div>
+      <div class="games">
+        <h3>Minijuegos publicados:</h3>
+        ${juegos.map(j=>`
+          <div class="gameMiniCard">
+            <span class="miniTitle">${esc(j.title)}</span>
+            <span class="votes">👍 ${j.likes||0} · 👎 ${j.dislikes||0}</span>
+            <button onclick="viewGame('${j.id}')">Ver</button>
+          </div>
+        `).join("")}
+      </div>
+    `;
+    document.getElementById('profileDetail').innerHTML = html;
+  }
+
+  // --------- NOTIFICACIONES ---------
+  let notifyTimer;
+  function showNotify(msg, error=false) {
+    let box = document.getElementById('notify');
+    box.textContent = msg;
+    box.style.background = error ? "#d12d2df2" : "#191c23f2";
+    box.classList.add("show");
+    clearTimeout(notifyTimer);
+    notifyTimer = setTimeout(()=>{ box.classList.remove("show"); }, 2600);
+  }
+
+  // --------- MENÚ USUARIO (DROPDOWN) ----------
+  document.getElementById('userMenuBtn').onclick = function(e){
+    let dd = document.getElementById('userDropdown');
+    dd.classList.toggle('open');
+    document.getElementById('overlay').style.display = dd.classList.contains('open') ? 'block' : 'none';
+  };
+  document.getElementById('overlay').onclick = hideDropdown;
+  function hideDropdown(){
+    document.getElementById('userDropdown').classList.remove('open');
+    document.getElementById('overlay').style.display = 'none';
+  }
+
+  // --------- RESET PASSWORD Y BORRAR CUENTA ----------
+  function showResetPass() {
+    if (!user) return;
+    client.auth.resetPasswordForEmail(user.email)
+      .then(()=>showNotify("¡Email enviado! Mira tu correo"))
+      .catch(()=>showNotify("Error al enviar email",true));
+    hideDropdown();
+  }
+  function confirmDeleteUser() {
+    if (!user) return;
+    if (!confirm("¿Seguro que quieres borrar tu cuenta?\n(No podrás recuperarla)")) return;
+    client.auth.admin.deleteUser(user.id)
+      .then(()=>{ showNotify("Cuenta eliminada"); logout(); })
+      .catch(()=>showNotify("Error al borrar cuenta",true));
+    hideDropdown();
   }
 
   // --------- UTILIDADES ---------
@@ -477,9 +723,6 @@
       '"':"&quot;","'":"&#39;","`":"&#96;"
     }[c]));
   }
-  function htmlEncode(str) {
-    return str.replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  }
   function timeAgo(dateStr) {
     const d = new Date(dateStr);
     const s = Math.floor((Date.now()-d.getTime())/1000);
@@ -488,21 +731,8 @@
     if (s<86400) return `${Math.floor(s/3600)} h`;
     return `${Math.floor(s/86400)} d`;
   }
-
-  // --- Opciones de usuario (reset pass y borrar cuenta) ---
-  function showResetPass() {
-    if (!user) return;
-    client.auth.resetPasswordForEmail(user.email)
-      .then(()=>showNotify("Te hemos enviado un email para resetear la contraseña."))
-      .catch(()=>showNotify("Error enviando email de reseteo.",false));
-    hideDropdown();
-  }
-  function confirmDeleteUser() {
-    if (!user) return;
-    if (!confirm("¿Seguro que quieres BORRAR tu cuenta? ¡Esta acción no se puede deshacer!")) return;
-    // Puedes poner aquí tu proceso real (en Supabase por defecto solo admins pueden borrar usuarios por seguridad)
-    showNotify("Solicitado borrado. Contacta con el admin para finalizar.");
-    hideDropdown();
+  function encodeHTML(str) {
+    return str.replace(/<\/script/gi, "<\\/script");
   }
 </script>
 </body>
