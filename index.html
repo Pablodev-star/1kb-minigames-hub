@@ -167,10 +167,8 @@
       const refresh_token = params.get('refresh_token');
       // Guarda el token de sesión en Supabase
       await client.auth.setSession({ access_token, refresh_token });
-      // Limpia el hash (opcional)
-      window.location.hash = "";
-      // Recarga para mostrar pantalla de logueado
-      window.location.reload();
+      // Limpia el hash y recarga SOLO la ruta, no toda la URL (mantiene la subcarpeta)
+      window.location.href = window.location.pathname; // así siempre vuelve a la página correcta
       return;
     }
     // 2. Si ya hay sesión previa, muestra la pantalla logueada
